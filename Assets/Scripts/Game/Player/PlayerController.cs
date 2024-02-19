@@ -7,6 +7,7 @@ public class PlayerController : NetworkBehaviour
 {
     [SerializeField] private float spead = 5;
     [SerializeField] private float sensitivity;
+    [SerializeField] private Transform cameraPosition;
 
     private float xRotation = 0f;
     private CharacterController _characterController;
@@ -18,7 +19,7 @@ public class PlayerController : NetworkBehaviour
         if (base.IsOwner)
         {
             _playerCamera = Camera.main;
-            _playerCamera.transform.position = transform.position;
+            _playerCamera.transform.position = cameraPosition.position;
             _playerCamera.transform.SetParent(transform);
         }
         else
