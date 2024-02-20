@@ -516,12 +516,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NetworkObserver: {fileID: 0}
-  <PrefabId>k__BackingField: 0
-  <SpawnableCollectionId>k__BackingField: 0
-  _scenePathHash: 3886925574
-  <SceneId>k__BackingField: 16694218225252602347
-  <AssetPathHash>k__BackingField: 0
   <IsNested>k__BackingField: 0
   <ComponentIndex>k__BackingField: 0
   <PredictedSpawn>k__BackingField: {fileID: 0}
@@ -537,6 +531,12 @@ MonoBehaviour:
   _isGlobal: 0
   _initializeOrder: 0
   _defaultDespawnType: 0
+  NetworkObserver: {fileID: 0}
+  <PrefabId>k__BackingField: 0
+  <SpawnableCollectionId>k__BackingField: 0
+  _scenePathHash: 3886925574
+  <SceneId>k__BackingField: 16694218225252602347
+  <AssetPathHash>k__BackingField: 0
 --- !u!1 &602833891 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6552401359178755911, guid: a2b562d1c25bafc4fb5dbb50d8afd34a, type: 3}
@@ -1116,6 +1116,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 2b6aa3f2236ad0e4b858a626715994ce, type: 2}
+    - target: {fileID: 104243265444127155, guid: a2b562d1c25bafc4fb5dbb50d8afd34a, type: 3}
+      propertyPath: m_Materials.Array.data[15]
+      value: 
+      objectReference: {fileID: 2100000, guid: 3cd604e0d91110943a822380b92deeeb, type: 2}
     - target: {fileID: 124338985362688682, guid: a2b562d1c25bafc4fb5dbb50d8afd34a, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
