@@ -1,5 +1,6 @@
 using System;
 using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 
 namespace Game.Weapon
@@ -8,7 +9,7 @@ namespace Game.Weapon
     {
         [SerializeField] private float maxDistance = 100f;
         [SerializeField] private float rotationSpeed = 5f; 
-
+        
         private Rigidbody _trackedObject;
         private float _distance = 10;
 
@@ -56,7 +57,7 @@ namespace Game.Weapon
                     Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
                     Ray ray = Camera.main.ScreenPointToRay(screenCenter);
                     Vector3 targetPosition = ray.GetPoint(_distance);
-                    // targetPosition = Vector3.Lerp(_trackedObject.position, targetPosition, Time.fixedDeltaTime * 1f);
+                    targetPosition = Vector3.Lerp(_trackedObject.position, targetPosition, 0.35f);
                     MoveObjectServer(_trackedObject.gameObject, targetPosition);
                 }
             }
@@ -65,6 +66,7 @@ namespace Game.Weapon
         [ServerRpc]
         private void MoveObjectServer(GameObject obj, Vector3 position)
         {
+            obj.transform.transform.position = position;
             MoveObject(obj, position);
         }
         
@@ -114,12 +116,7 @@ namespace Game.Weapon
             {
                 FriseObjectServer(_trackedObject.gameObject, false);
 
-                Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
-                Ray ray = Camera.main.ScreenPointToRay(screenCenter);
-                Vector3 targetPosition = ray.GetPoint(_distance);
-
-                // if(targetPosition != _trackedObject.position)
-                //     _trackedObject.AddForceAtPosition(_trackedObject.position- targetPosition, targetPosition);
+               
                 
                 _trackedObject = null;
             }
@@ -128,7 +125,20 @@ namespace Game.Weapon
         [ServerRpc]
         private void FriseObjectServer(GameObject obj, bool frees)
         {
+            var rb = obj.GetComponent<Rigidbody>();
+            rb.isKinematic = frees;
+            rb.useGravity = !frees;
+            if (!frees)
+            {
+                Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
+                Ray ray = Camera.main.ScreenPointToRay(screenCenter);
+                Vector3 targetPosition = ray.GetPoint(_distance);
+                
+                if(targetPosition != rb.position)
+                    rb.AddForceAtPosition(rb.position- targetPosition, targetPosition);
+            }
             FriseObject(obj, frees);
+            
         }
         
         [ObserversRpc]
@@ -137,6 +147,16 @@ namespace Game.Weapon
             var rb = obj.GetComponent<Rigidbody>();
             rb.isKinematic = frees;
             rb.useGravity = !frees;
+            if (!frees)
+            {
+                Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
+                Ray ray = Camera.main.ScreenPointToRay(screenCenter);
+                Vector3 targetPosition = ray.GetPoint(_distance);
+                
+                if(targetPosition != rb.position)
+                    rb.AddForceAtPosition(rb.position-targetPosition, targetPosition);
+                print((targetPosition != rb.position).ToString() + " " + rb.position+ " "+ targetPosition);
+            }
         }
     }
 }

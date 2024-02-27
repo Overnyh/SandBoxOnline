@@ -91,7 +91,7 @@ public class PlayerController : NetworkBehaviour
 
     private void CameraMove()
     {
-        if (canModedCamera)
+        if (canModedCamera && _playerCamera != null)
         {
             float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.fixedDeltaTime;
             float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.fixedDeltaTime;

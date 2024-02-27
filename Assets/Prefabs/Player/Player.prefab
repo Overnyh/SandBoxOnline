@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 6621707545699434153}
   - component: {fileID: 97608433989053452}
   - component: {fileID: 3987202756016487338}
+  - component: {fileID: 7395531589257207114}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -195,6 +196,7 @@ MonoBehaviour:
   - {fileID: 2585675451531802551}
   - {fileID: 6621707545699434153}
   - {fileID: 97608433989053452}
+  - {fileID: 3987202756016487338}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
@@ -257,7 +259,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6708393567093136240}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bfa70137bd104797bc048095dd029a5f, type: 3}
   m_Name: 
@@ -279,8 +281,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17c0b1128564459fb4e645bcfcb92513, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _componentIndexCache: 3
+  _addedNetworkObject: {fileID: 8832967293897370124}
+  _networkObjectCache: {fileID: 8832967293897370124}
+  objToSpawn: {fileID: 7237598908838637060, guid: 6f5a91e96d287f687bdcd978ff20111b, type: 3}
+  spawnedObject: {fileID: 0}
+--- !u!114 &7395531589257207114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6708393567093136240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bef30819182e4360af10cdada3c1ec01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   _componentIndexCache: 255
   _addedNetworkObject: {fileID: 8832967293897370124}
   _networkObjectCache: {fileID: 0}
-  objToSpawn: {fileID: 7237598908838637060, guid: 6f5a91e96d287f687bdcd978ff20111b, type: 3}
-  spawnedObject: {fileID: 0}
+  maxDistance: 100
+  rotationSpeed: 5
