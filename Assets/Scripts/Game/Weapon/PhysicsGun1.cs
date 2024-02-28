@@ -1,13 +1,12 @@
 using FishNet.Broadcast;
 using FishNet.Component.Transforming;
-using FishNet.Connection;
 using FishNet.Object;
 using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Game.Weapon
 {
-    public class PhysicsGun : BaseGun
+    public class PhysicsGun1 : BaseGun
     {
         [SerializeField] private float maxDistance = 100f;
         [SerializeField] private float rotationSpeed = 5f; 
@@ -16,16 +15,9 @@ namespace Game.Weapon
         private float _distance = 10;
 
         private PlayerController _playerController;
-        private NetworkConnection _conn;
-
         private void Start()
         {
             _playerController = GetComponent<PlayerController>();
-            if (IsOwner)
-            {
-                Debug.LogError(OwnerId);
-            }
-            
         }
         
         private void FixedUpdate()
@@ -39,7 +31,8 @@ namespace Game.Weapon
                 
                     float rotateInputX = Input.GetAxis("Mouse X") * rotationSpeed;
                     float rotateInputY = Input.GetAxis("Mouse Y") * rotationSpeed;
-                    
+
+                    // Вращение по осям X и Y
                     _trackedObject.transform.Rotate(Vector3.up, -rotateInputX, Space.World);
                     _trackedObject.transform.Rotate(Vector3.right, rotateInputY, Space.World);
                     // _trackedObject.transform.Rotate(rotateInputY,-rotateInputX,  0);
@@ -53,36 +46,18 @@ namespace Game.Weapon
                     Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
                     Ray ray = Camera.main.ScreenPointToRay(screenCenter);
                     Vector3 targetPosition = ray.GetPoint(_distance);
-                    _trackedObject.GetComponent<Rigidbody>().MovePosition(Vector3.Lerp(_trackedObject.transform.position, targetPosition, Time.fixedDeltaTime * 6f)); 
-                    MoveObjectServer(_trackedObject.gameObject, targetPosition);
+
+                    _trackedObject.GetComponent<Rigidbody>().MovePosition(Vector3.Lerp(_trackedObject.position, targetPosition, Time.fixedDeltaTime * 6f));
                 }
-               
+
+                MoveObjectServer(_trackedObject.gameObject, _trackedObject.position);
             }
         }
         
-        [ServerRpc(RunLocally = false)]
-        private void MoveObjectServer(GameObject obj, Vector3 targetPosition, NetworkConnection conn = null)
+        [ServerRpc]
+        private void MoveObjectServer(GameObject obj, Vector3 position)
         {
-            //obj.GetComponent<Rigidbody>().MovePosition(Vector3.Lerp(obj.transform.position, targetPosition, Time.fixedDeltaTime * 6f));
-            obj.transform.position = targetPosition;
-            // Debug.LogError( obj.transform.position);
-            // MoveObject(obj, position);
-            MoveObject(obj, targetPosition, conn.ClientId);
-        }
-        [ObserversRpc]
-        private void MoveObject(GameObject obj, Vector3 targetPosition, int conn)
-        {
-           
-            if (conn == Owner.ClientId)
-            {
-                if (IsOwner)
-                {
-                    Debug.LogError($"Its me {conn} {OwnerId}");
-                    return;
-                }
-                
-            }
-            obj.transform.position = targetPosition;
+            obj.transform.position = position;
         }
         
         protected override void Fire()
@@ -102,10 +77,11 @@ namespace Game.Weapon
                 {
                     _distance = hit.distance;
                     _trackedObject = rb;
-                    _trackedObject.isKinematic = true;
-                    _trackedObject.useGravity = false;
-                    FriseObject(_trackedObject.gameObject, true);
-                    
+                    FriseObjectServer(_trackedObject.gameObject, true);
+                    _trackedObject.GetComponent<NetworkTransform>().SetSynchronizePosition(false);
+                    _trackedObject.GetComponent<NetworkTransform>().SetSynchronizeRotation(false);
+                    _trackedObject.GetComponent<NetworkTransform>().SetSynchronizeScale(false);
+
                 }
             }
             else
@@ -126,57 +102,53 @@ namespace Game.Weapon
         {
             if (_trackedObject != null)
             {
-                // _trackedObject.isKinematic = false;
-                // _trackedObject.useGravity = true;
-                FriseObject(_trackedObject.gameObject, false);
+                FriseObjectServer(_trackedObject.gameObject, false);
+                _trackedObject.GetComponent<NetworkTransform>().SetSynchronizePosition(true);
+                _trackedObject.GetComponent<NetworkTransform>().SetSynchronizeRotation(true);
+                _trackedObject.GetComponent<NetworkTransform>().SetSynchronizeScale(true);
+
                 Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
                 Ray ray = Camera.main.ScreenPointToRay(screenCenter);
                 Vector3 targetPosition = ray.GetPoint(_distance);
-
+               
+                float scrollInput = Input.GetAxis("Mouse ScrollWheel");
+                _distance = Mathf.Clamp(_distance + scrollInput * 10f, 2f, maxDistance);
+                
                 if (targetPosition != _trackedObject.position)
                 {
-                    _trackedObject.AddForceAtPosition(_trackedObject.position- targetPosition, targetPosition);
+                    // _trackedObject.GetComponent<Rigidbody>().AddForceAtPosition((_trackedObject.transform.position - targetPosition)*(-100), targetPosition);
+
                     Impuls(_trackedObject.gameObject, targetPosition);
                 }
-                  
-
 
                 _trackedObject = null;
-                // _trackedObject.GetComponent<NetworkTransform>().SetSynchronizePosition(true);
-                // _trackedObject.GetComponent<NetworkTransform>().SetSynchronizeRotation(true);
             }
         }
         
         [ServerRpc(RunLocally = false)]
         private void Impuls(GameObject obj,  Vector3 targetPosition)
         {
-            obj.GetComponent<Rigidbody>().AddForceAtPosition(obj.transform.position- targetPosition, targetPosition);
-            ImpulsR(obj, targetPosition);
+            obj.GetComponent<Rigidbody>().AddForceAtPosition((obj.transform.position - targetPosition)*(-100), targetPosition);
+        }
+        
+        
+        [ServerRpc]
+        private void FriseObjectServer(GameObject obj, bool frees)
+        {
+            var rb = obj.GetComponent<Rigidbody>();
+            rb.isKinematic = frees;
+            rb.useGravity = !frees;
+            FriseObject(obj, frees);
+
         }
         
         [ObserversRpc]
-        private void ImpulsR(GameObject obj,  Vector3 targetPosition)
-        {
-            obj.GetComponent<Rigidbody>().AddForceAtPosition(obj.transform.position- targetPosition, targetPosition);
-        }
-        
-        [ServerRpc(RunLocally = true)]
         private void FriseObject(GameObject obj,  bool frees)
         {
             var rb = obj.GetComponent<Rigidbody>();
             rb.isKinematic = frees;
             rb.useGravity = !frees;
-            FriseObjectA(obj, frees);
-            // obj.GetComponent<NetworkTransform>().SetSynchronizePosition(!frees);
-        }
-        
-        [ObserversRpc]
-        private void FriseObjectA(GameObject obj,  bool frees)
-        {
-            var rb = obj.GetComponent<Rigidbody>();
-            rb.isKinematic = frees;
-            rb.useGravity = !frees;
-            // obj.GetComponent<NetworkTransform>().SetSynchronizePosition(!frees);
+
         }
     }
     
